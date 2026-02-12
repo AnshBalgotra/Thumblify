@@ -106,11 +106,28 @@ export const generateThumbnail = async (req: Request, res: Response) => {
     prompt += `The thumbnail should be ${aspect_ratio}, visually stunning, and designed to maximize click-through rate.Make it bold,professional, and impossible to ignore. `;
 
     // Generate the image using the ai model
-    const response: any = await ai.models.generateContent({
-      model,
-      contents: [prompt],
-      config: generationConfig,
-    });
+    // const response: any = await ai.models.generateContent({
+    //   model,
+    //   contents: [prompt],
+    //   config: generationConfig,
+    // });
+
+    let response: any;
+
+try {
+  response = await ai.models.generateContent({
+    model,
+    contents: [prompt],
+    config: generationConfig,
+  });
+
+  console.log("Gemini FULL response:", JSON.stringify(response, null, 2));
+
+} catch (err: any) {
+  console.error("Gemini API ERROR:", err?.response?.data || err.message);
+  throw err;
+}
+
 
     // check if the response is valid
     if (!response?.candidates?.[0]?.content.parts) {
