@@ -4,6 +4,7 @@ import ai from "../configs/ai.js";
 import path from "node:path";
 import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
+import os from "os";
 const stylePrompts = {
     "Bold & Graphic": "eye-catching thubnail,bold typography, vibrant colors , expressive facial reaction , dynamnic lighting,high contrast , click-worthy composition, professional style ",
     "Tech/Futuristic": "futuristic thumbnail,sleek modern design,digital UI elements,glowing accents,holographic effects,cyber-tech aesthetic,sharmp lighting,high-tech atmosphere",
@@ -112,9 +113,8 @@ export const generateThumbnail = async (req, res) => {
             }
         }
         const filename = `final-output-${Date.now()}.png`;
-        const filePath = path.join(`images`, filename);
-        // Crate the images directory if it doesn't exist
-        fs.mkdirSync("images", { recursive: true });
+        const tempDir = os.tmpdir();
+        const filePath = path.join(tempDir, filename);
         // Write the final image to the file
         fs.writeFileSync(filePath, finalBuffer);
         const uploadResult = await cloudinary.uploader.upload(filePath, {

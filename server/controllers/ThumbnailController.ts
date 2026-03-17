@@ -9,6 +9,7 @@ import ai from "../configs/ai.js";
 import path from "node:path";
 import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
+import os from "os";
 
 const stylePrompts = {
   "Bold & Graphic":
@@ -152,10 +153,8 @@ export const generateThumbnail = async (req: Request, res: Response) => {
     }
 
     const filename = `final-output-${Date.now()}.png`;
-    const filePath = path.join(`images`, filename);
-
-    // Crate the images directory if it doesn't exist
-    fs.mkdirSync("images", { recursive: true });
+    const tempDir = os.tmpdir();
+    const filePath = path.join(tempDir, filename);
 
     // Write the final image to the file
     fs.writeFileSync(filePath, finalBuffer!);
