@@ -115,25 +115,30 @@ export const generateThumbnail = async (req: Request, res: Response) => {
     // });
 
     let response: any;
+    try {
+      response = await ai.models.generateContent({
+        model,
+        contents: [prompt],
+        config: generationConfig,
+      });
 
-try {
-  response = await ai.models.generateContent({
-    model,
-    contents: [prompt],
-    config: generationConfig,
-  });
+      console.log("Gemini FULL response:", JSON.stringify(response, null, 2));
+    } catch (err: any) {
+      console.error("Gemini API ERROR:", err?.response?.data || err.message);
+      await Thumbnail.deleteOne({ _id: thumbnail._id });
+      throw err;
+    }
 
-  console.log("Gemini FULL response:", JSON.stringify(response, null, 2));
-
-} catch (err: any) {
-  console.error("Gemini API ERROR:", err?.response?.data || err.message);
-  throw err;
-}
-
+    // check if the response was blocked due to safety guidelines
+    if (response?.candidates?.[0]?.finishReason === "PROHIBITED_CONTENT") {
+      await Thumbnail.deleteOne({ _id: thumbnail._id });
+      throw new Error("Prompt violated safety guidelines. Please modify your prompt and try again.");
+    }
 
     // check if the response is valid
-    if (!response?.candidates?.[0]?.content.parts) {
-      throw new Error("Unexpected response");
+    if (!response?.candidates?.[0]?.content?.parts) {
+      await Thumbnail.deleteOne({ _id: thumbnail._id });
+      throw new Error("Unexpected response from image generation API.");
     }
 
     const parts = response.candidates[0].content.parts;
